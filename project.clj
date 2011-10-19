@@ -1,4 +1,4 @@
 (defproject
-  me.panzoo/cluj "0.0.1"
+  me.panzoo/soup "0.0.2"
 
-  :description "A cludge of clojurescript utilites.")
+  :description "A soup of clojurescript utilites.")

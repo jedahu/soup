@@ -1,4 +1,4 @@
-(ns me.panzoo.cluj.macros.phantom)
+(ns me.panzoo.soup.macros.phantom)
 
 (defmacro passert
   "An assert macro for phantomjs that exits on failure.

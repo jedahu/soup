@@ -1,15 +1,35 @@
-# Cluj
+# Soup
 
-Miscellaneous clojurescript macros.
+Useful clojurescript functions and macros.
 
-### me.panzoo.cluj.macros/defslurp
+## Namespaces and functions
+
+### me.panzoo.soup.geometry
+
+Miscellaneous functions.
+
+### me.panzoo.soup.dom
+
+Browser DOM manipulation.
+
+### me.panzoo.soup.svg
+
+Functions on SVG DOM and associated types.
+
+### me.panzoo.soup.macros
+
+#### defslurp
 
 `(def name (slurp uri))` but at compile time.
 
-### me.panzoo.cluj.macros/timeout
+#### timeout
 
 Execute forms in order with a time delay between each.
 
-### me.panzoo.cluj.phantom/passert
+### me.panzoo.soup.macros.phantom
+
+For use with [phantomjs](http://phantomjs.org).
+
+#### passert
 
 An assert macro for use with phantomjs.

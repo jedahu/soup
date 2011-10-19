@@ -1,4 +1,4 @@
-(ns me.panzoo.cluj.macros)
+(ns me.panzoo.soup.macros)
 
 (defmacro defslurp
   "`(def name (slurp uri))` but at compile time."
