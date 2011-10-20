@@ -139,7 +139,7 @@
     (.appendChild to (.cloneNode n true))))
 
 (defn id->node [id & [root]]
-  (.getElementById (or root *document* js/document) (pz-id id)))
+  (.getElementById (or root *document* js/document) id))
 
 (defn visible? [node]
   (not= "hidden" (.. node style visibility)))
