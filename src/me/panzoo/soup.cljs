@@ -21,8 +21,8 @@
             (let [maps* (reverse
                           (take-while
                             (or (map? x) (not x))
-                            (reversee maps)))]
+                            (reverse maps)))]
               (if (seq maps*)
-                (apply rmerge-with f ms*)
+                (apply rmerge-with f maps*)
                 (last maps))))]
     (apply rmerge-with f maps)))
