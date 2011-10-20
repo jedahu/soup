@@ -83,7 +83,7 @@
   `tag` is a string denoting the namespace prefix and tag-name, `attrs` is a
   map of keyword attribute names to attributes, and `children` is a sequence of
   child nodes."
-  [& opts]
+  [& {:as opts}]
   (fn [tag & [attrs & children]]
     (node (or (:document opts)
               js/document)
@@ -140,3 +140,17 @@
 
 (defn id->node [id & [root]]
   (.getElementById (or root *document* js/document) (pz-id id)))
+
+(defn visible? [node]
+  (not= "hidden" (.. node style visibility)))
+
+(defn set-visible [node visible?]
+  (set! (.. node style visibility)
+        (if visible? "" "hidden")))
+
+(defn create-document [ns root & children]
+  (let [doc (.. js/document implementation (createDocument ns root))
+        doc-root (. doc documentElement)]
+    (doseq [c children]
+      (.appendChild doc-root c))
+    doc))
