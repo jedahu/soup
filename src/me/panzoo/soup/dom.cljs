@@ -4,6 +4,8 @@
     [goog.style :as style]
     [goog.dom.ViewportSizeMonitor :as viewport]))
 
+(def ^:dynamic *document* nil)
+
 (def xhtmlns
   "The XHTML namespace string."
   "http://www.w3.org/1999/xhtml")
@@ -135,3 +137,6 @@
 (defn copy-children [from to]
   (doseq [n (seq<- (.. from childNodes))]
     (.appendChild to (.cloneNode n true))))
+
+(defn id->node [id & [root]]
+  (.getElementById (or root *document* js/document) (pz-id id)))
