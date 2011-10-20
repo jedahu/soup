@@ -54,7 +54,7 @@
   
   See also `set-attrs` and `set-attr`."
   [doc tag attrs children opts]
-  (let [[ns|tag & [tag]] (.split (name tag) ":")
+  (let [[ns|tag & [tag]] (.split tag ":")
         n (if tag
             (.createElementNS
               doc
@@ -80,7 +80,7 @@
   :document (DOM Document) Defaults to `js/document`.
   
   The returned function has the signature `[tag & [attrs & children]`, where
-  `tag` is a keyword denoting the namespace prefix and tag-name, `attrs` is a
+  `tag` is a string denoting the namespace prefix and tag-name, `attrs` is a
   map of keyword attribute names to attributes, and `children` is a sequence of
   child nodes."
   [& opts]
