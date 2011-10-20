@@ -131,3 +131,7 @@
   [node]
   (when (. node setCapture)
     (. node (setCapture))))
+
+(defn copy-children [from to]
+  (doseq [n (seq<- (.. from childNodes))]
+    (.appendChild to (.cloneNode n true))))
