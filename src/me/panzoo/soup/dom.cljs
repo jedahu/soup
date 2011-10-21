@@ -111,9 +111,13 @@
   (when (. node setCapture)
     (. node (setCapture))))
 
-(defn copy-children [from to]
+(defn copy-children [from to & [doc]]
   (doseq [n (seq<- (.. from childNodes))]
-    (.appendChild to (.cloneNode n true))))
+    (.appendChild
+      to
+      (if doc
+        (. doc (importNode n true))
+        (.cloneNode n true)))))
 
 (defn id->node [id & [root]]
   (.getElementById (or root *document* js/document) id))
