@@ -1,4 +1,6 @@
 (ns me.panzoo.soup.svg
+  (:use
+    [clojure.string :only (join)])
   (:require
     [goog.style :as style]
     [goog.dom :as dom]))
@@ -111,6 +113,10 @@
 
 (defn classes [node]
   (set (.. node className baseVal (split #"\s+"))))
+
+(defn del-class [node class]
+  (set! (.. node className baseVal)
+        (join " " (remove #{class} (classes node)))))
 
 (defn rect-center [r]
   (let [x (. r x)
