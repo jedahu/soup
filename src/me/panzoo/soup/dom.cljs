@@ -30,67 +30,44 @@
   [s]
   (dom/createTextNode s))
 
+(defn del-attr
+  "Remove attribute `k` with namespace `ns`. See `add-attr` for more details."
+  [node k]
+  (if-let [[ns k] (seq k)]
+    (.removeAttributeNS node ns (name k))
+    (.removeAttribute node (name k))))
+
 (defn set-attr
-  "Set attribute `(name k)` to `(str v)` on `node`."
-  [node k v & opts]
-  (let [[ns|tag & [tag]] (.split (name k) ":")]
-    (if tag
-      (.setAttributeNS node ns|tag (name k) (str v))
-      (.setAttributeNS node nil ns|tag (str v)))))
+  "Set attribute `k` to `(str v)` on `node`. If `k` is a keyword, `(name k)` is
+  the attribute name. If `k` is a vector, the first item is the namespace and
+  the `name` of the second is the attribute name."
+  [node k v]
+  (if-let [[ns k] (and (vector? k) k)]
+    (.setAttributeNS node ns (name k) (str v))
+    (.setAttribute node (name k) (str v))))
 
 (defn set-attrs
-  "Set attributes on `node`. `attrs` must be a map of attribute names to
-  values. See `set-attr` for more details."
+  "Set attributes on `node`. `attrs` must be a map of attribute keywords to
+  values. If a key is a seq, the first item must be a namespace and the second
+  a keyword. See `set-attr` and `set-attr-ns` for more details."
   [node & attrs]
   (doseq [[k v] attrs] (set-attr node k v)))
 
-(defn- node
-  "Usually better to use `node-maker`.
-  
-  Create a DOM node from document `doc` with attributes and child nodes. `opts`
-  may have the following keys:
-  
-  :ns-prefix-map (IPersistentMap) Defaults to `default-prefix-map`.
+(defn node
+  "Create a DOM node from `*document*` or `js/document` with attributes and
+  child nodes. If tag is a vector, the first item is a namespace and the
+  the second is the tag name.
   
   See also `set-attrs` and `set-attr`."
-  [doc tag attrs children opts]
-  (let [[ns|tag & [tag]] (.split tag ":")
-        n (if tag
-            (.createElementNS
-              doc
-              ((:ns-prefix-map opts) ns|tag)
-              tag)
-            (.createElementNS
-              doc
-              (or (:null-ns opts) nil)
-              ns|tag))]
-    (apply set-attrs n attrs)
+  [tag attrs & children]
+  (let [doc (or *document* js/document)
+        node (if-let [[ns tag] (and (vector? tag) tag)]
+               (.createElementNS (or *document* js/document) ns tag)
+               (.createElement (or *document* js/document) tag))]
+    (apply set-attrs node attrs)
     (doseq [c children]
-      (.appendChild n c))
-    n))
-
-(defn node-maker
-  "Create a node-making function with `opts` as its defaults. `opts` may have
-  the following keys:
-  
-  :ns-prefix-map (IPersistentMap) Defaults to `default-prefix-map`.
-
-  :null-ns (String) Defaults to `nil`.
-
-  :document (DOM Document) Defaults to `js/document`.
-  
-  The returned function has the signature `[tag & [attrs & children]`, where
-  `tag` is a string denoting the namespace prefix and tag-name, `attrs` is a
-  map of keyword attribute names to attributes, and `children` is a sequence of
-  child nodes."
-  [& {:as opts}]
-  (fn [tag & [attrs & children]]
-    (node (or (:document opts)
-              js/document)
-          tag attrs children
-          (merge {:ns-prefix-map default-prefix-map
-                  :null-ns xhtmlns}
-                 opts))))
+      (.appendChild node c))
+    node))
 
 (defn set-style
   "Set style `(name k)` to `(str v)` on `node`."
