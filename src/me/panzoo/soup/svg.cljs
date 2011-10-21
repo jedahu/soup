@@ -57,6 +57,12 @@
   [svg evt]
   (point svg (. evt clientX) (. evt clientY)))
 
+(defn evt-offset-point
+  "Create an SVGPoint with svg root element `svg` and offset coordinates from
+  browser event `evt`."
+  [svg evt]
+  (point svg (. evt offsetX) (. evt offsetY)))
+
 (defn point->pair
   "Convert an SVGPoint to a two-element vector."
   [p]
@@ -66,6 +72,14 @@
   "Convert a two-element vector to an SVGPoint."
   [svg [x y]]
   (point svg x y))
+
+(defn pointwise
+  "Apply `op` pointwise to the SVGPoints `pts`, using svg root element `svg` to
+  construct the resulting SVGPoint."
+  [svg op & pts]
+  (point svg
+         (apply op (map #(. % x) pts))
+         (apply op (map #(. % y) pts))))
 
 (defn matrix
   "Create an SVGMatrix with svg root element `svg` and optional values `a`
@@ -94,3 +108,6 @@
         dx (- x1 x2)
         dy (- y1 y2)]
     (.sqrt js/Math (+ (* dx dx) (* dy dy)))))
+
+(defn classes [node]
+  (set (.. node className baseVal (split #"\s+"))))
