@@ -77,7 +77,7 @@
         node (if-let [[ns tag] (and (vector? tag) tag)]
                (.createElementNS (or *document* js/document) ns tag)
                (.createElement (or *document* js/document) tag))]
-    (apply set-attrs node attrs)
+    (apply set-attrs node (flatten (seq attrs)))
     (doseq [c children]
       (.appendChild node c))
     node))
