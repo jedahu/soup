@@ -1,6 +1,7 @@
 (ns me.panzoo.soup.dom
   (:require
     [goog.dom :as dom]
+    [goog.dom.classes :as classes]
     [goog.style :as style]
     [goog.dom.ViewportSizeMonitor :as viewport]))
 
@@ -135,3 +136,22 @@
     (doseq [c children]
       (.appendChild doc-root c))
     doc))
+
+(defn ancestor?
+  "Tests if `node1` is an ancestor of `node2` or is `node2`."
+  [node1 node2]
+  (loop [parent node2]
+    (or (= parent node1)
+        (and (. parent parentNode)
+             (recur (. parent parentNode))))))
+
+(defn ancestor-by-class [node class]
+  (loop [node node]
+    (cond
+      (classes/has node class) node
+      (.parentNode node) (recur (.parentNode node))
+      :else nil)))
+
+(defn remove-node [node]
+  (when-let [parent (. node parentNode)]
+    (.removeChild parent node)))
