@@ -34,14 +34,14 @@
 (defn del-attr
   "Remove attribute `k` with namespace `ns`. See `add-attr` for more details."
   [node k]
-  (if-let [[ns k] (seq k)]
+  (if-let [[ns k] (and (vector? k) k)]
     (.removeAttributeNS node ns (name k))
     (.removeAttribute node (name k))))
 
 (defn set-attr
-  "Set attribute `k` to `(str v)` on `node`. If `k` is a keyword, `(name k)` is
-  the attribute name. If `k` is a vector, the first item is the namespace and
-  the `name` of the second is the attribute name."
+  "Set attribute `k` to `(str v)` on `node`. `(name k)` is the attribute name,
+  unless `k` is a vector, in which case the first item is the namespace and the
+  `name` of the second is the attribute name."
   [node k v]
   (if-let [[ns k] (and (vector? k) k)]
     (.setAttributeNS node ns (name k) (str v))
@@ -51,8 +51,20 @@
   "Set attributes on `node`. `attrs` must be a map of attribute keywords to
   values. If a key is a seq, the first item must be a namespace and the second
   a keyword. See `set-attr` and `set-attr-ns` for more details."
-  [node & attrs]
+  [node & {:as attrs}]
   (doseq [[k v] attrs] (set-attr node k v)))
+
+(defn attr
+  "Get attribute of `node`. See `set-attr` for details about `k`."
+  [node k]
+  (if-let [[ns k] (and (vector? k) k)]
+    (.getAttributeNS node ns (name k))
+    (.getAttribute node (name k))))
+
+(defn attrs
+  "Get attributes of `node`. See `attr`."
+  [node & ks]
+  (doseq [k ks] (attr node k)))
 
 (defn node
   "Create a DOM node from `*document*` or `js/document` with attributes and

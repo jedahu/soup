@@ -111,3 +111,13 @@
 
 (defn classes [node]
   (set (.. node className baseVal (split #"\s+"))))
+
+(defn rect-center [r]
+  (let [x (. r x)
+        y (. r y)
+        w (. r width)
+        h (. r height)]
+    [(+ x (/ w 2)) (+ y (/ h 2))]))
+
+(defn bbox-center [node]
+  (rect-center (. node (getBBox))))
