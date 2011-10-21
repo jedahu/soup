@@ -64,7 +64,7 @@
 (defn attrs
   "Get attributes of `node`. See `attr`."
   [node & ks]
-  (doseq [k ks] (attr node k)))
+  (for [k ks] (attr node k)))
 
 (defn node
   "Create a DOM node from `*document*` or `js/document` with attributes and
