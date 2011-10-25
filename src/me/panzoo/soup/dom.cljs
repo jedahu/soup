@@ -175,7 +175,7 @@
   (loop [node node]
     (cond
       (classes/has node class) node
-      (.parentNode node) (recur (.parentNode node))
+      (. node parentNode) (recur (. node parentNode))
       :else nil)))
 
 (defn remove-node [node]

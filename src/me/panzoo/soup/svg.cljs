@@ -120,8 +120,8 @@
 (defn distance
   "Calculate the distance between two SVGPoints."
   [p1 p2]
-  (let [[x1 y1] (point->pair p1)
-        [x2 y2] (point->pair p2)
+  (let [[x1 y1] (pair<-point p1)
+        [x2 y2] (pair<-point p2)
         dx (- x1 x2)
         dy (- y1 y2)]
     (.sqrt js/Math (+ (* dx dx) (* dy dy)))))
