@@ -31,6 +31,14 @@
         t (.. ts (createSVGTransformFromMatrix (.multiply curr mx)))]
     (.initialize ts t)))
 
+(defn matrix-*
+  "Multiply SVGMatrix `mx` with transform of `node`."
+  [mx node]
+  (let [ts (.. node transform baseVal)
+        curr (get-matrix node)
+        t (.. ts (createSVGTransformFromMatrix (.multiply mx curr)))]
+    (.initialize ts t)))
+
 (defn clear-matrix
   "Set transform of `node` to the identity matrix. Returns a reference to the
   SVGMatrix."
