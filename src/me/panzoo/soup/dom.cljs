@@ -149,6 +149,20 @@
       (.appendChild doc-root c))
     doc))
 
+(defn ancestors [node]
+  (loop [node node acc [node]]
+    (if-let [p (. node parentNode)]
+      (recur p (conj acc p))
+      acc)))
+
+(defn ancestors-to [node ancestor]
+  (loop [node node acc [node]]
+    (let [p (. node parentNode)]
+      (cond
+        (= node ancestor) acc
+        p (recur p (conj acc p))
+        :else nil))))
+
 (defn ancestor?
   "Tests if `node1` is an ancestor of `node2` or is `node2`."
   [node1 node2]
@@ -167,3 +181,7 @@
 (defn remove-node [node]
   (when-let [parent (. node parentNode)]
     (.removeChild parent node)))
+
+(extend-type js/Node
+  IHash
+  (-hash [o] (goog.getUid o)))

@@ -5,6 +5,32 @@
     [goog.style :as style]
     [goog.dom :as dom]))
 
+(defn matrix
+  "Create an SVGMatrix with svg root element `svg` and optional values `a`
+  through `f`. If no values are supplied the identity matrix is returned."
+  [svg & [a b c d e f]]
+  (let [mx (. svg (createSVGMatrix))]
+    (when a
+      (set! (. mx a) a)
+      (set! (. mx b) b)
+      (set! (. mx c) c)
+      (set! (. mx d) d)
+      (set! (. mx e) e)
+      (set! (. mx f) f))
+    mx))
+
+(defn vector<-matrix
+  "Convert an SVGMatrix to a six-element vector."
+  [mx]
+  [(. mx a) (. mx b) (. mx c) (. mx d) (. mx e) (. mx f)])
+
+(defn matrix-components [node]
+  (let [[a b c d e f] (vector<-matrix (get-matrix node))]
+    {:translation [e f]
+     :rotation (Math/atan2 b a)
+     :scale [(Math/sqrt (+ (* a a) (* b b)))
+             (Math/sqrt (+ (* c c) (* d d)))]}))
+
 (defn set-matrix
   "Set the transformation matrix of `node` to SVGMatrix `mx`."
   [node mx]
@@ -73,12 +99,12 @@
   [svg evt]
   (point svg (. evt offsetX) (. evt offsetY)))
 
-(defn point->pair
+(defn pair<-point
   "Convert an SVGPoint to a two-element vector."
   [p]
   [(. p x) (. p y)])
 
-(defn pair->point
+(defn point<-pair
   "Convert a two-element vector to an SVGPoint."
   [svg [x y]]
   (point svg x y))
@@ -90,25 +116,6 @@
   (point svg
          (apply op (map #(. % x) pts))
          (apply op (map #(. % y) pts))))
-
-(defn matrix
-  "Create an SVGMatrix with svg root element `svg` and optional values `a`
-  through `f`. If no values are supplied the identity matrix is returned."
-  [svg & [a b c d e f]]
-  (let [mx (. svg (createSVGMatrix))]
-    (when a
-      (set! (. mx a) a)
-      (set! (. mx b) b)
-      (set! (. mx c) c)
-      (set! (. mx d) d)
-      (set! (. mx e) e)
-      (set! (. mx f) f))
-    mx))
-
-(defn matrix->vector
-  "Convert an SVGMatrix to a six-element vector."
-  [mx]
-  [(. mx a) (. mx b) (. mx c) (. mx d) (. mx e) (. mx f)])
 
 (defn distance
   "Calculate the distance between two SVGPoints."
@@ -122,9 +129,9 @@
 (defn classes [node]
   (set (.. node className baseVal (split #"\s+"))))
 
-(defn del-class [node class]
+(defn del-classes [node & class-names]
   (set! (.. node className baseVal)
-        (join " " (remove #{class} (classes node)))))
+        (join " " (remove (set class-names) (classes node)))))
 
 (defn rect-center [r]
   (let [x (. r x)
