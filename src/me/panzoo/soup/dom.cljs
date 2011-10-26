@@ -77,7 +77,7 @@
         node (if-let [[ns tag] (and (vector? tag) tag)]
                (.createElementNS (or *document* js/document) ns tag)
                (.createElement (or *document* js/document) tag))]
-    (apply set-attrs node (flatten (seq attrs)))
+    (apply set-attrs node (apply concat (seq attrs)))
     (doseq [c children]
       (.appendChild node c))
     node))
@@ -156,11 +156,11 @@
       acc)))
 
 (defn ancestors-to [node ancestor]
-  (loop [node node acc [node]]
+  (loop [node node acc []]
     (let [p (. node parentNode)]
       (cond
         (= node ancestor) acc
-        p (recur p (conj acc p))
+        p (recur p (conj acc node))
         :else nil))))
 
 (defn ancestor?
