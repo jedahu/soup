@@ -123,7 +123,9 @@
     (.sqrt js/Math (+ (* dx dx) (* dy dy)))))
 
 (defn classes [node]
-  (set (.. node className baseVal (split #"\s+"))))
+  (if (. node className)
+    (set (.. node className baseVal (split #"\s+")))
+    #{}))
 
 (defn del-classes [node & class-names]
   (set! (.. node className baseVal)
@@ -179,6 +181,13 @@
   ([svg point]
    (apply node-from-point svg (pair<-point point))))
 
+(defn ancestor-by-class [node class]
+  (loop [node node]
+    (cond
+      ((classes node) class) node
+      (. node parentNode) (recur (. node parentNode))
+      :else nil)))
+
 (defprotocol CenterOrigin
   (-center-origin [node]))
 
@@ -217,9 +226,10 @@
   (-center-origin [node]
     (let [[cx cy] (bbox-center node)]
       (doseq [n (dom/seq<- (. node childNodes))]
-        (set-matrix
-          n (. (get-matrix n)
-               (translate (- cx) (- cy)))))
+        (when (instance? js/Element n)
+          (set-matrix
+            n (. (get-matrix n)
+                 (translate (- cx) (- cy))))))
       (set-matrix
         node (. (get-matrix node)
                 (translate cx cy)))))
