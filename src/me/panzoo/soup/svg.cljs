@@ -131,6 +131,9 @@
   (set! (.. node className baseVal)
         (join " " (remove (set class-names) (classes node)))))
 
+(defn clear-classes [node]
+  (set! (.. node className) ""))
+
 (defn rect [svg & [x y w h]]
   (let [r (. svg (createSVGRect))]
     (when x
