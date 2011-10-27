@@ -2,8 +2,8 @@
   (:use
     [clojure.string :only (join)])
   (:require
-    [goog.style :as style]
-    [goog.dom :as dom]))
+    [me.panzoo.soup.dom :as dom]
+    [goog.style :as style]))
 
 (defn matrix
   "Create an SVGMatrix with svg root element `svg` and optional values `a`
@@ -41,13 +41,9 @@
 (defn get-matrix
   "Get the transformation matrix of `node`. Returns an SVGMatrix."
   [node]
-  (let [baseVal (.. node transform baseVal)
-        trans (. baseVal (consolidate))]
-    (if trans
-      (. trans matrix)
-      (do
-        (.setAttribute node "transform" "scale(1)")
-        (.. baseVal (consolidate) matrix)))))
+  (when-not (.getAttribute node "transform")
+    (.setAttribute node "transform" "scale(1)"))
+  (.. node transform baseVal (consolidate) matrix))
 
 (defn *-matrix
   "Multiply transform of `node` with SVGMatrix `mx`."
@@ -133,6 +129,18 @@
   (set! (.. node className baseVal)
         (join " " (remove (set class-names) (classes node)))))
 
+(defn rect [svg & [x y w h]]
+  (let [r (. svg (createSVGRect))]
+    (when x
+      (set! (. r x) x)
+      (set! (. r y) y)
+      (set! (. r width) w)
+      (set! (. r height) h))
+    r))
+
+(defn vector<-rect [r]
+  [(. r x) (. r y) (. r width) (. r height)])
+
 (defn rect-center [r]
   (let [x (. r x)
         y (. r y)
@@ -140,5 +148,91 @@
         h (. r height)]
     [(+ x (/ w 2)) (+ y (/ h 2))]))
 
-(defn bbox-center [node]
-  (rect-center (. node (getBBox))))
+(defn bbox-center
+  ([node]
+   (rect-center (. node (getBBox))))
+  ([node svg]
+   (apply point svg (bbox-center node))))
+
+(defn bbox-for-target
+  [node target]
+  (let [svg (. node ownerSVGElement)
+        [x y w h] (vector<-rect (. node (getBBox)))
+        mx (.getTransformToElement node target)
+        p1 (point svg x y)
+        p2 (point svg (+ x w) y)
+        p3 (point svg x (+ y h))
+        p4 (point svg (+ x w) (+ y h))
+        pts (flatten (for [p [p1 p2 p3 p4]]
+                       (pair<-point (.matrixTransform p mx))))
+        pl (dom/node [dom/svgns "polyline"] {:points (join " " pts)})]
+    (.appendChild target pl)
+    (let [bb (. pl (getBBox))]
+      (.removeChild target pl)
+      bb)))
+
+(defn node-from-point
+  ([svg x y]
+   (if (.. svg ownerDocument elementFromPoint)
+     (.. svg ownerDocument (elementFromPoint x y))
+     (last (seq<- (. svg (getIntersectionList (rect svg x y 1 1) nil))))))
+  ([svg point]
+   (apply node-from-point svg (pair<-point point))))
+
+(defprotocol CenterOrigin
+  (-center-origin [node]))
+
+(defn- center-origin-xywh [node]
+  (let [[x y w h] (map js/parseFloat (dom/attrs node :x :y :width :height))
+        cx (/ w 2)
+        cy (/ h 2)]
+    (dom/set-attrs node :x (- cx) :y (- cy))
+    (set-matrix
+      node (. (get-matrix node)
+              (translate (+ x cx) (+ y cy))))))
+
+(defn- center-origin-xybb [node]
+  (let [[x y _ _] (vector<-rect (. node (getBBox)))
+        [cx cy] (bbox-center node)]
+    (dom/set-attrs node :x (- cx) :y (- cy))
+    (set-matrix
+      node (. (get-matrix node)
+              (translate (+ x cx) (+ y cy))))))
+
+(extend-protocol CenterOrigin
+
+  js/SVGRectElement
+  (-center-origin [node]
+    (center-origin-xybb node))
+
+  js/SVGEllipseElement
+  (-center-origin [node]
+    (let [[cx cy] (dom/attrs node :cx :cy)]
+      (dom/set-attrs node :cx 0 :cy 0)
+      (set-matrix
+        node (. (get-matrix node)
+                (translate cx cy)))))
+
+  js/SVGGElement
+  (-center-origin [node]
+    (let [[cx cy] (bbox-center node)]
+      (doseq [n (dom/seq<- (. node childNodes))]
+        (set-matrix
+          n (. (get-matrix n)
+               (translate (- cx) (- cy)))))
+      (set-matrix
+        node (. (get-matrix node)
+                (translate cx cy)))))
+
+  js/SVGTextElement
+  (-center-origin [node]
+    ; Why is bbox.y incorrect?
+    (let [[x y] (map js/parseFloat (dom/attrs node :x :y))
+          [cx cy] (bbox-center node)]
+      (dom/set-attrs node :x (- cx) :y (- cy))
+      (set-matrix
+        node (. (get-matrix node)
+                (translate (+ x cx) (+ y cy)))))))
+
+(defn center-origin [node]
+  (-center-origin node))
