@@ -5,19 +5,26 @@
     [me.panzoo.soup.dom :as dom]
     [goog.style :as style]))
 
+(defn owner-svg [node]
+  (or (. node ownerSVGElement)
+      (and (= (. node tagName) "svg")
+           (= (. node namespaceURI) dom/svgns)
+           node)))
+
 (defn matrix
   "Create an SVGMatrix with svg root element `svg` and optional values `a`
   through `f`. If no values are supplied the identity matrix is returned."
-  [svg & [a b c d e f]]
-  (let [mx (. svg (createSVGMatrix))]
-    (when a
-      (set! (. mx a) a)
-      (set! (. mx b) b)
-      (set! (. mx c) c)
-      (set! (. mx d) d)
-      (set! (. mx e) e)
-      (set! (. mx f) f))
-    mx))
+  ([svg]
+   (. svg (createSVGMatrix)))
+  ([svg a b c d e f]
+   (let [mx (matrix svg)]
+     (set! (. mx a) a)
+     (set! (. mx b) b)
+     (set! (. mx c) c)
+     (set! (. mx d) d)
+     (set! (. mx e) e)
+     (set! (. mx f) f)
+     mx)))
 
 (defn vector<-matrix
   "Convert an SVGMatrix to a six-element vector."
@@ -75,6 +82,15 @@
     (set-matrix node mx)
     mx))
 
+(defn matrix-between [from to]
+  (.getTransformToElement from to))
+
+(defn transform-point
+  ([point mx]
+   (.matrixTransform point mx))
+  ([point from to]
+   (transform-point point (matrix-between from to))))
+
 (defn point
   "Create an SVGPoint with svg root element `svg` and numbers `x` and `y`."
   [svg x y]
@@ -86,14 +102,14 @@
 (defn evt-client-point
   "Create an SVGPoint with svg root element `svg` and client coordinates from
   browser event `evt`."
-  [svg evt]
-  (point svg (. evt clientX) (. evt clientY)))
+  [evt]
+  (point (owner-svg (.. evt target)) (. evt clientX) (. evt clientY)))
 
 (defn evt-offset-point
   "Create an SVGPoint with svg root element `svg` and offset coordinates from
   browser event `evt`."
-  [svg evt]
-  (point svg (. evt offsetX) (. evt offsetY)))
+  [evt]
+  (point (owner-svg (.. evt target)) (. evt offsetX) (. evt offsetY)))
 
 (defn pair<-point
   "Convert an SVGPoint to a two-element vector."
@@ -134,14 +150,16 @@
 (defn clear-classes [node]
   (set! (.. node className) ""))
 
-(defn rect [svg & [x y w h]]
-  (let [r (. svg (createSVGRect))]
-    (when x
-      (set! (. r x) x)
-      (set! (. r y) y)
-      (set! (. r width) w)
-      (set! (. r height) h))
-    r))
+(defn rect
+  ([svg]
+   (. svg (createSVGRect)))
+  ([svg x y w h]
+   (let [r (rect svg)]
+     (set! (. r x) x)
+     (set! (. r y) y)
+     (set! (. r width) w)
+     (set! (. r height) h)
+     r)))
 
 (defn vector<-rect [r]
   [(. r x) (. r y) (. r width) (. r height)])
