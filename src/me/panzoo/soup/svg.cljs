@@ -163,15 +163,10 @@
         mx (.getTransformToElement node target)
         p1 (point svg x y)
         p2 (point svg (+ x w) y)
-        p3 (point svg x (+ y h))
-        p4 (point svg (+ x w) (+ y h))
-        pts (flatten (for [p [p1 p2 p3 p4]]
-                       (pair<-point (.matrixTransform p mx))))
-        pl (dom/node [dom/svgns "polyline"] {:points (join " " pts)})]
-    (.appendChild target pl)
-    (let [bb (. pl (getBBox))]
-      (.removeChild target pl)
-      bb)))
+        p3 (point svg (+ x w) (+ y h))
+        p4 (point svg x (+ y h))]
+    (for [p [p1 p2 p3 p4]]
+      (pair<-point (.matrixTransform p mx)))))
 
 (defn node-from-point
   ([svg x y]
