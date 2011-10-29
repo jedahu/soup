@@ -139,7 +139,7 @@
     (.sqrt js/Math (+ (* dx dx) (* dy dy)))))
 
 (defn classes [node]
-  (if (. node className)
+  (if (and (. node className) (.. node className baseVal))
     (set (.. node className baseVal (split #"\s+")))
     #{}))
 
