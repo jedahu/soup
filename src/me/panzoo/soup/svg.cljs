@@ -5,7 +5,10 @@
     [me.panzoo.soup.dom :as dom]
     [goog.style :as style]))
 
-(defn owner-svg [node]
+(defn owner-svg
+  "Return the SVGSVGElement for `node`, or `nil`. If `node` is an SVGSVGElement,
+  return it."
+  [node]
   (or (. node ownerSVGElement)
       (and (= (. node tagName) "svg")
            (= (. node namespaceURI) dom/svgns)
@@ -31,7 +34,14 @@
   [mx]
   [(. mx a) (. mx b) (. mx c) (. mx d) (. mx e) (. mx f)])
 
-(defn matrix-components [node]
+(defn matrix-components
+  "Return the translation, rotation, and scale components of the transformation
+  matrix of `node` in a map:
+
+  :translation [x y]
+  :rotation radians
+  :scale [sx sy]"
+  [node]
   (let [[a b c d e f] (vector<-matrix (get-matrix node))]
     {:translation [e f]
      :rotation (Math/atan2 b a)
@@ -82,10 +92,14 @@
     (set-matrix node mx)
     mx))
 
-(defn matrix-between [from to]
+(defn matrix-between
+  "An alias for the DOM method `getTransformToElement`."
+  [from to]
   (.getTransformToElement from to))
 
 (defn transform-point
+  "Transform `point` using an SVGMatrix `mx` or the transform between the nodes
+  `from` and `to`."
   ([point mx]
    (.matrixTransform point mx))
   ([point from to]
@@ -138,19 +152,27 @@
         dy (- y1 y2)]
     (.sqrt js/Math (+ (* dx dx) (* dy dy)))))
 
-(defn classes [node]
+(defn classes
+  "Return the classes of `node` as a set."
+  [node]
   (if (and (. node className) (.. node className baseVal))
     (set (.. node className baseVal (split #"\s+")))
     #{}))
 
-(defn del-classes [node & class-names]
+(defn del-classes
+  "Remove `class-names` from `node`."
+  [node & class-names]
   (set! (.. node className baseVal)
         (join " " (remove (set class-names) (classes node)))))
 
-(defn clear-classes [node]
+(defn clear-classes
+  "Remove all classes from `node`."
+  [node]
   (set! (.. node className) ""))
 
 (defn rect
+  "Create a new SVGRect using the SVGSVGElement `svg`, with or without
+  dimensions."
   ([svg]
    (. svg (createSVGRect)))
   ([svg x y w h]
@@ -161,10 +183,14 @@
      (set! (. r height) h)
      r)))
 
-(defn vector<-rect [r]
+(defn vector<-rect
+  "Convert an SVGRect to a vector `[x y width height]`."
+  [r]
   [(. r x) (. r y) (. r width) (. r height)])
 
-(defn rect-center [r]
+(defn rect-center
+  "Return the center of SVGRect `r` as a vector pair."
+  [r]
   (let [x (. r x)
         y (. r y)
         w (. r width)
@@ -172,12 +198,17 @@
     [(+ x (/ w 2)) (+ y (/ h 2))]))
 
 (defn bbox-center
+  "Return the center of the BBox of `node` as a vector pair."
   ([node]
    (rect-center (. node (getBBox))))
   ([node svg]
    (apply point svg (bbox-center node))))
 
 (defn bbox-for-target
+  "Transform the BBox of `node` to the coordinate space of `target`.
+
+  Returns a vector of vector pairs, which when used in the data attribute of
+  a polygon will draw a transformed rectangle."
   [node target]
   (let [svg (. node ownerSVGElement)
         [x y w h] (vector<-rect (. node (getBBox)))
@@ -190,6 +221,7 @@
       (pair<-point (.matrixTransform p mx)))))
 
 (defn node-from-point
+  "Get the topmost node under the point `[x y]` under the svg root `svg`."
   ([svg x y]
    (if (.. svg ownerDocument elementFromPoint)
      (.. svg ownerDocument (elementFromPoint x y))
@@ -197,7 +229,9 @@
   ([svg point]
    (apply node-from-point svg (pair<-point point))))
 
-(defn ancestor-by-class [node class]
+(defn ancestor-by-class
+  "Ported from me.panzoo.soup.dom to work with the SVG class attribute."
+  [node class]
   (loop [node node]
     (cond
       ((classes node) class) node
@@ -260,5 +294,8 @@
         node (. (get-matrix node)
                 (translate (+ x cx) (+ y cy)))))))
 
-(defn center-origin [node]
+(defn center-origin
+  "Modify and transform `node` so its origin of transformation is the center of
+  its BBox."
+  [node]
   (-center-origin node))
