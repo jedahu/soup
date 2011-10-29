@@ -93,15 +93,23 @@
   [node & styles]
   (doseq [[k v] styles] (set-style node k v)))
 
-(defn viewport-size []
+(defn viewport-size
+  "Return the page's viewport dimensions as a vector pair."
+  []
   (let [size (. (viewport/getInstanceForWindow)
                 (getSize))]
     [(. size width) (. size height)]))
 
-(defn viewport-center []
+(defn viewport-center
+  "Return the coordinates of the center of the page's viewport as a vector
+  pair."
+  []
   (map #(/ % 2) (viewport-size)))
 
-(defn seq<- [s]
+(defn seq<-
+  "Convert a `NodeList` or `HTMLCollection` to a sequence, else pass the input
+  to `seq`."
+  [s]
   (if (or (instance? js/NodeList s)
           (instance? js/HTMLCollection s))
     (for [x (range (.length s))]
@@ -109,10 +117,12 @@
     (seq s)))
 
 (defn computed-style
+  "Get the computed style of `node`."
   [node]
   (.getComputedStyle js/window node))
 
 (defn computed-dimensions
+  "Return the computed dimensions of `node` as a vector pair."
   [node]
   (let [cs (computed-style node)
         w (js/parseInt (. cs width))
@@ -120,11 +130,15 @@
     [w h]))
 
 (defn set-capture
+  "If the `setCapture` method exists, call it on `node`."
   [node]
   (when (. node setCapture)
     (. node (setCapture))))
 
-(defn copy-children [from to & [doc]]
+(defn copy-children
+  "Copy child nodes of `from` to `to`. If a destination `doc` is supplied, use
+  `importNode` instead of `cloneNode`."
+  [from to & [doc]]
   (doseq [n (seq<- (.. from childNodes))]
     (.appendChild
       to
@@ -132,30 +146,47 @@
         (. doc (importNode n true))
         (.cloneNode n true)))))
 
-(defn id->node [id & [root]]
+(defn id->node
+  "Return the node with id `id`. Search under `root` or `js/document`."
+  [id & [root]]
   (.getElementById (or root *document* js/document) id))
 
-(defn visible? [node]
+(defn visible?
+  "Returns true if `node` is visible (CSS visibility rule)."
+  [node]
   (not= "hidden" (.. node style visibility)))
 
-(defn set-visible [node visible?]
+(defn set-visible
+  "Set CSS visibility rule."
+  [node visible?]
   (set! (.. node style visibility)
         (if visible? "" "hidden")))
 
-(defn create-document [ns root & children]
+(defn create-document
+  "Create a new DOMDocument with a document node with namespace `ns` and tag
+  name `root`. Populate with a sequence of `children` nodes."
+  [ns root & children]
   (let [doc (.. js/document implementation (createDocument ns root))
         doc-root (. doc documentElement)]
     (doseq [c children]
       (.appendChild doc-root c))
     doc))
 
-(defn ancestors [node]
+(defn ancestors
+  "Return a vector of the ancstors of `node`, including `node` as the first
+  item."
+  [node]
   (loop [node node acc [node]]
     (if-let [p (. node parentNode)]
       (recur p (conj acc p))
       acc)))
 
-(defn ancestors-to [node ancestor]
+(defn ancestors-to
+  "Return a vector of the ancestors of `node` up to but not including
+  `ancestor`. If `ancestor` is not an ancestor of `node`, return `nil`.
+
+  See also `ancestors`."
+  [node ancestor]
   (loop [node node acc []]
     (let [p (. node parentNode)]
       (cond
@@ -171,14 +202,18 @@
         (and (. parent parentNode)
              (recur (. parent parentNode))))))
 
-(defn ancestor-by-class [node class]
+(defn ancestor-by-class
+  "Returns the first ancestor of `node` that has `class`, or returns `nil`."
+  [node class]
   (loop [node node]
     (cond
       (classes/has node class) node
       (. node parentNode) (recur (. node parentNode))
       :else nil)))
 
-(defn remove-node [node]
+(defn remove-node
+  "Remove `node` from its parent, if it has one."
+  [node]
   (when-let [parent (. node parentNode)]
     (.removeChild parent node)))
 
