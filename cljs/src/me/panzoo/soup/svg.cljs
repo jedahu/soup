@@ -6,13 +6,12 @@
     [goog.style :as style]))
 
 (defn attr [node k]
-  (. (aget attr (name k)) baseVal))
+  (aget node (name k)))
 
 (defn attr-val [node k]
-  (. (attr node k) value))
-
-(defn set-attr-val [node k v]
-  (set! (. (attr node k) value) v))
+  (when-let [a (attr node k)]
+    (when-let [b (. a baseVal)]
+      (. a value))))
 
 (defn seq<-
   [s]
