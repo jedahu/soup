@@ -217,9 +217,6 @@
   (when-let [parent (. node parentNode)]
     (.removeChild parent node)))
 
-(extend-protocol IHash
-  js/Node
-  (-hash [o] (goog.getUid o))
-
-  js/DOMWindow
+(extend-type js/Node
+  IHash
   (-hash [o] (goog.getUid o)))

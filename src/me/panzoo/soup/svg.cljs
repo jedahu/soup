@@ -5,6 +5,22 @@
     [me.panzoo.soup.dom :as dom]
     [goog.style :as style]))
 
+(defn attr [node k]
+  (. (aget attr (name k)) baseVal))
+
+(defn attr-val [node k]
+  (. (attr node k) value))
+
+(defn set-attr-val [node k v]
+  (set! (. (attr node k) value) v))
+
+(defn seq<-
+  [s]
+  (if (instance? js/SVGLengthList s)
+    (for [i (range (count s))]
+      (.getItem s i))
+    (seq s)))
+
 (defn owner-svg
   "Return the SVGSVGElement for `node`, or `nil`. If `node` is an SVGSVGElement,
   return it."
@@ -287,9 +303,12 @@
   js/SVGTextElement
   (-center-origin [node]
     ; Why is bbox.y incorrect?
-    (let [[x y] (map js/parseFloat (dom/attrs node :x :y))
+    (let [x (.. node x baseVal (getItem 0) value)
+          y (.. node y baseVal (getItem 0) value)
+          [bx by _ _] (vector<-rect (. node (getBBox)))
           [cx cy] (bbox-center node)]
-      (dom/set-attrs node :x (- cx) :y (- cy))
+      (set! (.. node x baseVal (getItem 0) value) (- cx))
+      (set! (.. node y baseVal (getItem 0) value) (- cy))
       (set-matrix
         node (. (get-matrix node)
                 (translate (+ x cx) (+ y cy)))))))
