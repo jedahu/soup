@@ -18,5 +18,3 @@
 
 (p/assert
   (= {:x 0} (s/rmerge {:a 1} {:b 2} "x" {:x 1} {:x 0})))
-
-(.exit js/phantom 0)

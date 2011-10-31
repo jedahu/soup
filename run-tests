@@ -14,4 +14,8 @@ mkdir -p out
 if [ "$1" ]; then
   ./compile || exit 1
 fi
-"$PHANTOM_JS" out/testall.js
+
+cp out/testall.js out/_testall.js
+echo 'phantom.exit(0)' >> out/_testall.js
+
+"$PHANTOM_JS" out/_testall.js
