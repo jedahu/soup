@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  echo 'usage: ./run-tests [arg]'
+  echo '    Run tests using the javascript interpreter $JS or d8.'
+  echo '    If arg is present, compile before testing using'
+  echo '    $CLOJURESCRIPT_HOME/bin/cljsc'
+  exit 1
+fi
+
+[ "$PHANTOM_JS" ] || PHANTOM_JS=phantomjs
+
+mkdir -p out
+if [ "$1" ]; then
+  ./compile || exit 1
+fi
+"$PHANTOM_JS" out/testall.js
