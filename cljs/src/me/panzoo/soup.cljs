@@ -15,7 +15,7 @@
 (defn- rmerge-fn [& maps]
   (let [maps* (reverse
                 (take-while
-                  (or (map? x) (not x))
+                  #(or (map? %) (not %))
                   (reverse maps)))]
     (if (seq maps*)
       (apply rmerge-with rmerge-fn maps*)
