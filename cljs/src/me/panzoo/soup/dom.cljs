@@ -39,13 +39,13 @@
     (.removeAttribute node (name k))))
 
 (defn set-attr
-  "Set attribute `k` to `(str v)` on `node`. `(name k)` is the attribute name,
-  unless `k` is a vector, in which case the first item is the namespace and the
-  `name` of the second is the attribute name."
+  "Set attribute `k` to `v` on `node`. `(name k)` is the attribute name, unless
+  `k` is a vector, in which case the first item is the namespace and the `name`
+  of the second is the attribute name."
   [node k v]
   (if-let [[ns k] (and (vector? k) k)]
-    (.setAttributeNS node ns (name k) (str v))
-    (.setAttribute node (name k) (str v))))
+    (.setAttributeNS node ns (name k) v)
+    (.setAttribute node (name k) v)))
 
 (defn set-attrs
   "Set attributes on `node`. `attrs` must be a map of attribute keywords to
