@@ -107,14 +107,20 @@
   (map #(/ % 2) (viewport-size)))
 
 (defn seq<-
-  "Convert a `NodeList` or `HTMLCollection` to a sequence, else pass the input
-  to `seq`."
+  "Convert an `aget`-able object to a sequence."
   [s]
-  (if (or (instance? js/NodeList s)
-          (instance? js/HTMLCollection s))
-    (for [x (range (.length s))]
-      (aget s x))
-    (seq s)))
+  (for [x (range (.length s))]
+    (aget s x)))
+
+(extend-protocol ISeqable
+  js/NodeList
+  (-seq [coll] (seq<- coll))
+
+  js/HTMLCollection
+  (-seq [coll] (seq<- coll))
+
+  js/NamedNodeMap
+  (-seq [coll] (seq<- coll)))
 
 (defn computed-style
   "Get the computed style of `node`."

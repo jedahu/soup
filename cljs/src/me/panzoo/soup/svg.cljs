@@ -16,10 +16,15 @@
 
 (defn seq<-
   [s]
-  (if (instance? js/SVGLengthList s)
-    (for [i (range (count s))]
-      (.getItem s i))
-    (seq s)))
+  (for [i (range (. s numberOfItems))]
+    (.getItem s i)))
+
+(extend-protocol ISeqable
+  js/SVGLengthList
+  (-seq [coll] (seq<- coll))
+
+  js/SVGPathSegList
+  (-seq [coll] (seq<- coll)))
 
 (defn owner-svg
   "Return the SVGSVGElement for `node`, or `nil`. If `node` is an SVGSVGElement,
