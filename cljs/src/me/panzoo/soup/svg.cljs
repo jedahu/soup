@@ -24,6 +24,9 @@
   js/SVGLengthList
   (-seq [coll] (seq<- coll))
 
+  js/SVGPointList
+  (-seq [coll] (seq<- coll))
+
   js/SVGPathSegList
   (-seq [coll] (seq<- coll)))
 
