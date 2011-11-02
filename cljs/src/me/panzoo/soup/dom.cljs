@@ -116,6 +116,9 @@
   js/NodeList
   (-seq [coll] (seq<- coll))
 
+  js/DOMStringList
+  (-seq [coll] (seq<- coll))
+
   js/HTMLCollection
   (-seq [coll] (seq<- coll))
 
