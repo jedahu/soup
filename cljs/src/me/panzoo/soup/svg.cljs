@@ -3,7 +3,9 @@
     [clojure.string :only (join)])
   (:require
     [me.panzoo.soup.dom :as dom]
-    [goog.style :as style]))
+    [goog.style :as style]
+    [goog.events :as events]
+    [goog.events.EventType :as event-type]))
 
 (defn attr [node k]
   (aget node (name k)))
@@ -322,3 +324,16 @@
   its BBox."
   [node]
   (-center-origin node))
+
+(defn img<-
+  "Render `svg` to a new HTML `img` element. If an :error option is provided
+  its value must be a function of one argument (the image); it will be called
+  once if the error event fires."
+  [svg & opts]
+  (let [opts (apply hash-map opts)
+        xml (.serializeToString (js/XMLSerializer.) svg)
+        img (js/Image.)]
+    (when-let [error (:error opts)]
+      (events/listenOnce img event-type/ERROR #(error img)))
+    (set! (. img src) (str "data:image/svg+xml;base64," (js/btoa xml)))
+    img))
