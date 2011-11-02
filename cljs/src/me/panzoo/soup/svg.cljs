@@ -313,6 +313,20 @@
         node (. (get-matrix node)
                 (translate cx cy)))))
 
+  js/SVGPolygonElement
+  (-center-origin [node]
+    (let [svg (owner-svg node)
+          [x y _ _] (vector<-rect (. node (getBBox)))
+          [cx cy] (bbox-center node)
+          pts (. node points)
+          pts* (map pair<-point (vec pts))]
+      (. pts (clear))
+      (doseq [[x y] pts*]
+        (.appendItem pts (point svg (- x cx) (- y cy))))
+      (set-matrix
+        node (. (get-matrix node)
+                (translate cx cy)))))
+
   js/SVGTextElement
   (-center-origin [node]
     ; Why is bbox.y incorrect?
