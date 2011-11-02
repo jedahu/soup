@@ -234,7 +234,7 @@
 
   Returns a vector of vector pairs, which when used in the data attribute of
   a polygon will draw a transformed rectangle."
-  [node target]
+  [target node]
   (let [svg (. node ownerSVGElement)
         [x y w h] (vector<-rect (. node (getBBox)))
         mx (.getTransformToElement node target)
@@ -244,6 +244,10 @@
         p4 (point svg x (+ y h))]
     (for [p [p1 p2 p3 p4]]
       (pair<-point (.matrixTransform p mx)))))
+
+(defn bboxes-for-target
+  [target & nodes]
+  (vec (map (partial bbox-for-target target) nodes)))
 
 (defn node-from-point
   "Get the topmost node under the point `[x y]` under the svg root `svg`."
