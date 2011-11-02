@@ -172,7 +172,7 @@
   "Create a new DOMDocument with a document node with namespace `ns` and tag
   name `root`. Populate with a sequence of `children` nodes."
   [ns root & children]
-  (let [doc (.. js/document implementation (createDocument ns root))
+  (let [doc (.. js/document implementation (createDocument ns root nil))
         doc-root (. doc documentElement)]
     (doseq [c children]
       (.appendChild doc-root c))
