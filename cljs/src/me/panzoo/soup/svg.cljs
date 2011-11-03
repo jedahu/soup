@@ -66,8 +66,11 @@
   :translation [x y]
   :rotation radians
   :scale [sx sy]"
-  [node]
-  (let [[a b c d e f] (vector<-matrix (get-matrix node))]
+  [node|mx]
+  (let [[a b c d e f] (vector<-matrix
+                        (if (instance? js/SVGMatrix node|mx)
+                          node|mx
+                          (get-matrix node|mx)))]
     {:translation [e f]
      :rotation (Math/atan2 b a)
      :scale [(Math/sqrt (+ (* a a) (* b b)))
