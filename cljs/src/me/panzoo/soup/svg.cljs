@@ -147,8 +147,9 @@
 (defn evt-client-point
   "Create an SVGPoint with svg root element `svg` and client coordinates from
   browser event `evt`."
-  [evt]
-  (point (owner-svg (.. evt target)) (. evt clientX) (. evt clientY)))
+  [evt & [svg]]
+  (point (or svg (owner-svg (.. evt target)))
+         (. evt clientX) (. evt clientY)))
 
 (defn evt-offset-point
   "Create an SVGPoint with svg root element `svg` and offset coordinates from
