@@ -27,6 +27,9 @@
   js/SVGPointList
   (-seq [coll] (seq<- coll))
 
+  js/SVGTransformList
+  (-seq [coll] (seq<- coll))
+
   js/SVGPathSegList
   (-seq [coll] (seq<- coll)))
 
