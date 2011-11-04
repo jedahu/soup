@@ -62,6 +62,13 @@
   [mx]
   [(. mx a) (. mx b) (. mx c) (. mx d) (. mx e) (. mx f)])
 
+(defn get-matrix
+  "Get the transformation matrix of `node`. Returns an SVGMatrix."
+  [node]
+  (when-not (.getAttribute node "transform")
+    (.setAttribute node "transform" "scale(1)"))
+  (.. node transform baseVal (consolidate) matrix))
+
 (defn matrix-components
   "Return the translation, rotation, and scale components of the transformation
   matrix of `node` in a map:
@@ -85,13 +92,6 @@
   (let [ts (.. node transform baseVal)
         t (. ts (createSVGTransformFromMatrix mx))]
     (. ts (initialize t))))
-
-(defn get-matrix
-  "Get the transformation matrix of `node`. Returns an SVGMatrix."
-  [node]
-  (when-not (.getAttribute node "transform")
-    (.setAttribute node "transform" "scale(1)"))
-  (.. node transform baseVal (consolidate) matrix))
 
 (defn *-matrix
   "Multiply transform of `node` with SVGMatrix `mx`."
