@@ -275,7 +275,7 @@
       :else nil)))
 
 (defprotocol CenterOrigin
-  (-center-origin [node]))
+  (-center-origin [node xy]))
 
 (defn- center-origin-xywh [node]
   (let [[x y w h] (map js/parseFloat (dom/attrs node :x :y :width :height))
@@ -286,31 +286,32 @@
       node (. (get-matrix node)
               (translate (+ x cx) (+ y cy))))))
 
-(defn- center-origin-xybb [node]
+(defn- center-origin-xybb [node xy]
   (let [[x y _ _] (vector<-rect (. node (getBBox)))
-        [cx cy] (bbox-center node)]
-    (dom/set-attrs node :x (- cx) :y (- cy))
+        [cx cy] (or xy (bbox-center node))]
+    (dom/set-attrs node :x (- x cx) :y (- x cy))
     (set-matrix
       node (. (get-matrix node)
-              (translate (+ x cx) (+ y cy))))))
+              (translate (+ cx) (+ cy))))))
 
 (extend-protocol CenterOrigin
 
   js/SVGRectElement
-  (-center-origin [node]
-    (center-origin-xybb node))
+  (-center-origin [node xy]
+    (center-origin-xybb node xy))
 
   js/SVGEllipseElement
-  (-center-origin [node]
-    (let [[cx cy] (dom/attrs node :cx :cy)]
-      (dom/set-attrs node :cx 0 :cy 0)
+  (-center-origin [node xy]
+    (let [[cx cy] (dom/attrs node :cx :cy)
+          [x y] (or xy [0 0])]
+      (dom/set-attrs node :cx (- cx x) :cy (- cy y))
       (set-matrix
         node (. (get-matrix node)
-                (translate cx cy)))))
+                (translate (+ cx x) (+ cy y))))))
 
   js/SVGGElement
-  (-center-origin [node]
-    (let [[cx cy] (bbox-center node)]
+  (-center-origin [node xy]
+    (let [[cx cy] (or xy (bbox-center node))]
       (doseq [n (dom/seq<- (. node childNodes))]
         (when (instance? js/Element n)
           (set-matrix
@@ -321,10 +322,10 @@
                 (translate cx cy)))))
 
   js/SVGPolygonElement
-  (-center-origin [node]
+  (-center-origin [node xy]
     (let [svg (owner-svg node)
           [x y _ _] (vector<-rect (. node (getBBox)))
-          [cx cy] (bbox-center node)
+          [cx cy] (or xy (bbox-center node))
           pts (. node points)
           pts* (map pair<-point (vec pts))]
       (. pts (clear))
@@ -335,14 +336,14 @@
                 (translate cx cy)))))
 
   js/SVGTextElement
-  (-center-origin [node]
+  (-center-origin [node xy]
     ; Why is bbox.y incorrect?
     (let [x (.. node x baseVal (getItem 0) value)
           y (.. node y baseVal (getItem 0) value)
           [bx by _ _] (vector<-rect (. node (getBBox)))
-          [cx cy] (bbox-center node)]
-      (set! (.. node x baseVal (getItem 0) value) (- cx))
-      (set! (.. node y baseVal (getItem 0) value) (- cy))
+          [cx cy] (or xy (bbox-center node))]
+      (set! (.. node x baseVal (getItem 0) value) (- x cx))
+      (set! (.. node y baseVal (getItem 0) value) (- y cy))
       (set-matrix
         node (. (get-matrix node)
                 (translate (+ x cx) (+ y cy)))))))
@@ -350,8 +351,8 @@
 (defn center-origin
   "Modify and transform `node` so its origin of transformation is the center of
   its BBox."
-  [node]
-  (-center-origin node))
+  [node & [xy]]
+  (-center-origin node xy))
 
 (defn img<-
   "Render `svg` to a new HTML `img` element. If an :error option is provided
