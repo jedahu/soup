@@ -84,14 +84,11 @@
 
 (defn set-style
   "Set style `(name k)` to `(str v)` on `node`."
-  [node k v]
-  (style/setStyle node (name k) (str v)))
-
-(defn set-styles
-  "Set styles on `node`. `styles` must be a map of key value pairs. See
-  `set-style` for more details."
-  [node & styles]
-  (doseq [[k v] styles] (set-style node k v)))
+  ([node k v]
+   (style/setStyle node (name k) (str v)))
+  ([node k v & kvs]
+   (set-style node k v)
+   (doseq [[k v] (partition 2 kvs)] (set-style node k v))))
 
 (defn viewport-size
   "Return the page's viewport dimensions as a vector pair."
