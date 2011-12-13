@@ -7,19 +7,22 @@
     [goog.events :as events]
     [goog.events.EventType :as event-type]))
 
-(defn attr [node k]
-  (aget node (name k)))
-
-(defn attr-val [node k]
-  (when-let [a (attr node k)]
-    (when-let [b (. a baseVal)]
-      (. a value))))
-
 (defn seq<-
   [s]
   (when s
     (for [i (range (. s numberOfItems))]
       (.getItem s i))))
+
+(defn attr [node k & [anim?]]
+  (when-let [a (aget node (name k))]
+    (cond
+      (. a baseVal) (let [v (if anim? (. a animVal) (. a baseVal))]
+                      (if (. v numberOfItems)
+                        (seq<- v)
+                        (. v value)))
+      (. a numberOfItems) (seq<- a)
+      (. a value) (. a value)
+      :else a)))
 
 (defn owner-svg
   "Return the SVGSVGElement for `node`, or `nil`. If `node` is an SVGSVGElement,
