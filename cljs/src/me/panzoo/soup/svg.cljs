@@ -318,7 +318,7 @@
           [x y _ _] (vector<-rect (. node (getBBox)))
           [cx cy] (or xy (bbox-center node))
           pts (. node points)
-          pts* (map pair<-point (vec pts))]
+          pts* (map pair<-point (vec (seq<- pts)))]
       (. pts (clear))
       (doseq [[x y] pts*]
         (.appendItem pts (point svg (- x cx) (- y cy))))
