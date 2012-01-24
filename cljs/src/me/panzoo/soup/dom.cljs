@@ -111,19 +111,6 @@
   (for [x (range (.length s))]
     (aget s x)))
 
-(extend-protocol ISeqable
-  js/NodeList
-  (-seq [coll] (seq<- coll))
-
-  js/DOMStringList
-  (-seq [coll] (seq<- coll))
-
-  js/HTMLCollection
-  (-seq [coll] (seq<- coll))
-
-  js/NamedNodeMap
-  (-seq [coll] (seq<- coll)))
-
 (defn computed-style
   "Get the computed style of `node`."
   [node]
