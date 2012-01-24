@@ -79,7 +79,9 @@
                (.createElement (or *document* js/document) tag))]
     (apply set-attrs node (apply concat (seq attrs)))
     (doseq [c children]
-      (.appendChild node c))
+      (if (string? c)
+        (.appendChild node (text c))
+        (.appendChild node c)))
     node))
 
 (defn set-style
