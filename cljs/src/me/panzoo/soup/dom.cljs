@@ -95,9 +95,8 @@
 (defn viewport-size
   "Return the page's viewport dimensions as a vector pair."
   []
-  (let [size (. (viewport/getInstanceForWindow)
-                (getSize))]
-    [(. size width) (. size height)]))
+  (let [size (.getSize (viewport/getInstanceForWindow))]
+    [(. size -width) (. size -height)]))
 
 (defn viewport-center
   "Return the coordinates of the center of the page's viewport as a vector
@@ -108,7 +107,7 @@
 (defn seq<-
   "Convert an `aget`-able object to a sequence."
   [s]
-  (for [x (range (.length s))]
+  (for [x (range (. s -length))]
     (aget s x)))
 
 (defn computed-style
@@ -120,25 +119,25 @@
   "Return the computed dimensions of `node` as a vector pair."
   [node]
   (let [cs (computed-style node)
-        w (js/parseInt (. cs width))
-        h (js/parseInt (. cs height))]
+        w (js/parseInt (. cs -width))
+        h (js/parseInt (. cs -height))]
     [w h]))
 
 (defn set-capture
   "If the `setCapture` method exists, call it on `node`."
   [node]
-  (when (. node setCapture)
-    (. node (setCapture))))
+  (when (. node -setCapture)
+    (.setCapture node)))
 
 (defn copy-children
   "Copy child nodes of `from` to `to`. If a destination `doc` is supplied, use
   `importNode` instead of `cloneNode`."
   [from to & [doc]]
-  (doseq [n (seq<- (.. from childNodes))]
+  (doseq [n (seq<- (. from -childNodes))]
     (.appendChild
       to
       (if doc
-        (. doc (importNode n true))
+        (.importNode doc n true)
         (.cloneNode n true)))))
 
 (defn id->node
@@ -149,20 +148,20 @@
 (defn visible?
   "Returns true if `node` is visible (CSS visibility rule)."
   [node]
-  (not= "hidden" (.. node style visibility)))
+  (not= "hidden" (.. node -style -visibility)))
 
 (defn set-visible
   "Set CSS visibility rule."
   [node visible?]
-  (set! (.. node style visibility)
+  (set! (.. node -style -visibility)
         (if visible? "" "hidden")))
 
 (defn create-document
   "Create a new DOMDocument with a document node with namespace `ns` and tag
   name `root`. Populate with a sequence of `children` nodes."
   [ns root & children]
-  (let [doc (.. js/document implementation (createDocument ns root nil))
-        doc-root (. doc documentElement)]
+  (let [doc (.. js/document -implementation (createDocument ns root nil))
+        doc-root (. doc -documentElement)]
     (doseq [c children]
       (.appendChild doc-root c))
     doc))
@@ -172,7 +171,7 @@
   item."
   [node]
   (loop [node node acc [node]]
-    (if-let [p (. node parentNode)]
+    (if-let [p (. node -parentNode)]
       (recur p (conj acc p))
       acc)))
 
@@ -183,7 +182,7 @@
   See also `ancestors`."
   [node ancestor]
   (loop [node node acc []]
-    (let [p (. node parentNode)]
+    (let [p (. node -parentNode)]
       (cond
         (= node ancestor) acc
         p (recur p (conj acc node))
@@ -194,8 +193,8 @@
   [node1 node2]
   (loop [parent node2]
     (or (= parent node1)
-        (and (. parent parentNode)
-             (recur (. parent parentNode))))))
+        (and (. parent -parentNode)
+             (recur (. parent -parentNode))))))
 
 (defn ancestor-by-class
   "Returns the first ancestor of `node` that has `class`, or returns `nil`."
@@ -203,13 +202,13 @@
   (loop [node node]
     (cond
       (classes/has node class) node
-      (. node parentNode) (recur (. node parentNode))
+      (. node -parentNode) (recur (. node -parentNode))
       :else nil)))
 
 (defn remove-node
   "Remove `node` from its parent, if it has one."
   [node]
-  (when-let [parent (. node parentNode)]
+  (when-let [parent (. node -parentNode)]
     (.removeChild parent node)))
 
 (extend-type js/Node

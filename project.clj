@@ -4,6 +4,8 @@
   :description "A soup of clojurescript utilites."
   
   :dependencies
-  [[me.panzoo/soup-macros "0.0.1-SNAPSHOT"]]
+  [[org.clojure/clojure "1.3.0"]
+   [me.panzoo/soup-macros "0.0.1-SNAPSHOT"]]
 
+  :clojurescript-src "cljs/src"
   :source-path "cljs/src")
