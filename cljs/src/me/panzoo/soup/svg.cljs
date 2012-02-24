@@ -358,3 +358,13 @@
       (events/listenOnce img event-type/ERROR #(error img)))
     (set! (. img -src) (str "data:image/svg+xml;base64," (js/btoa xml)))
     img))
+
+(defn with-g-wrap [node f]
+  (let [g (dom/node [dom/svgns "g"])
+        p (.parentNode node)]
+    (.appendBefore p g node)
+    (.appendChild g node)
+    (let [ret (f g)]
+      (.appendBefore p node g)
+      (.removeChild p g)
+      ret)))
