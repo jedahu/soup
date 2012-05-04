@@ -368,3 +368,40 @@
       (.appendBefore p node g)
       (.removeChild p g)
       ret)))
+
+(defn rects-intersect?
+  [r1 r2]
+  (and (< (. r2 -x) (+ (. r1 -x) (. r1 -width)))
+       (> (+ (. r2 -x) (. r2 -width)) (. r1 -x))
+       (< (. r2 -y) (+ (. r1 -y) (. r1 -height)))
+       (> (+ (. r2 -y) (. r2 -height)) (. r1 -y))))
+
+;; Get all elements that have a BBox (excludes <defs>, <title>, etc).
+;; Note that 0-opacity, off-screen etc elements are still considered "visible"
+;; for this function
+;;
+;; Parameters:
+;; parent - The parent DOM element to search within
+;;
+;; Returns:
+;; An array with objects that include:
+;; * elem - The element
+;; * bbox - The element's BBox as retrieved from getStrokedBBox
+(defn visible-nodes+bboxes
+  [parent]
+  (for [node (dom/seq<- (. parent -children))
+        :when (. node -getBBox)]
+    {:node node :bbox (with-g-wrap node #(. % getBBox))}))
+
+;; Since the only browser that supports the SVG DOM getIntersectionList is Opera,
+;; we need to provide an implementation here.  We brute-force it for now.
+;;
+;; Reference:
+;; Firefox does not implement getIntersectionList(), see https://bugzilla.mozilla.org/show_bug.cgi?id=501421
+;; Webkit does not implement getIntersectionList(), see https://bugs.webkit.org/show_bug.cgi?id=11274
+(defn intersection-list
+  [svg rect parent]
+  (if (. svg -getIntersectionList)
+    (. svg getIntersectionList rect parent)
+    (let [bboxes (visible-nodes+bboxes parent)]
+      (filter #(rects-intersect? rect %) bboxes))))
