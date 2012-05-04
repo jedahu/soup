@@ -361,12 +361,12 @@
 
 (defn with-g-wrap [node f]
   (let [g (dom/node [dom/svgns "g"])
-        p (.parentNode node)]
-    (.appendBefore p g node)
-    (.appendChild g node)
+        p (. node -parentNode)]
+    (. p insertBefore g node)
+    (. g appendChild node)
     (let [ret (f g)]
-      (.appendBefore p node g)
-      (.removeChild p g)
+      (. p insertBefore node g)
+      (. p removeChild g)
       ret)))
 
 (defn rects-intersect?
