@@ -183,6 +183,12 @@
     (set (.. node -className -baseVal (split #"\s+")))
     #{}))
 
+(defn add-classes
+  "Add `class-names` to `node`."
+  [node & class-names]
+  (set! (.. node -className -baseVal)
+        (join " " (apply conj (classes node) class-names))))
+
 (defn del-classes
   "Remove `class-names` from `node`."
   [node & class-names]
