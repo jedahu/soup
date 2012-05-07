@@ -14,15 +14,17 @@
       (.getItem s i))))
 
 (defn attr [node k & [anim?]]
-  (when-let [a (aget node (name k))]
-    (cond
-      (. a -baseVal) (let [v (if anim? (. a -animVal) (. a -baseVal))]
-                      (if (. v -numberOfItems)
-                        (seq<- v)
-                        (. v -value)))
-      (. a -numberOfItems) (seq<- a)
-      (. a -value) (. a -value)
-      :else a)))
+  (let [local-name (name (if (vector? k) (second k) k))]
+    (when-let [a (aget node local-name)]
+      (cond
+        (. a -baseVal) (let [v (if anim? (. a -animVal) (. a -baseVal))]
+                         (cond
+                           (string? v) v
+                           (. v -numberOfItems) (seq<- v)
+                           (. v -value) (. v -value)))
+        (. a -numberOfItems) (seq<- a)
+        (. a -value) (. a -value)
+        :else a))))
 
 (defn owner-svg
   "Return the SVGSVGElement for `node`, or `nil`. If `node` is an SVGSVGElement,
