@@ -338,7 +338,9 @@
   js/SVGTextElement
   (-center-origin [node xy]
     ; Why is bbox.y incorrect?
-    (let [x (.. node -x -baseVal (getItem 0) -value)
+    (with-g-wrap node
+      #(-center-origin % xy))
+    #_(let [x (.. node -x -baseVal (getItem 0) -value)
           y (.. node -y -baseVal (getItem 0) -value)
           [bx by _ _] (vector<-rect (.getBBox node))
           [cx cy] (or xy (bbox-center node))]
